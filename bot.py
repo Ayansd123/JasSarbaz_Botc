@@ -178,7 +178,8 @@ async def city(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def set_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.text == "Главное меню":
-    return await show_menu(update, context)
+        return await show_menu(update, context)
+
     user_id = update.effective_user.id
     tz = users[user_id]["timezone"]
 
@@ -253,4 +254,5 @@ def run_web():
 if __name__ == "__main__":
     threading.Thread(target=run_web).start()
     main()
+
 
