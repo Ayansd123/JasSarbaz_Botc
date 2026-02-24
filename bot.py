@@ -138,12 +138,15 @@ async def physical(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users[user_id]["day"] = 1
 
     keyboard = [[city] for city in KZ_CITIES.keys()]
+keyboard.append(["Главное меню"])
     await update.message.reply_text("Выбери город:", reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
     return CITY
 
 
 async def city(update: Update, context: ContextTypes.DEFAULT_TYPE):
     city_name = update.message.text
+    if city_name == "Главное меню":
+    return await show_menu(update, context)
     user_id = update.effective_user.id
 
     if city_name not in KZ_CITIES:
@@ -179,13 +182,20 @@ async def set_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
         name=str(user_id),
     )
 
-    return ConversationHandler.END
+    return await show_menu(update, context)
 
 
-async def send_training(context: ContextTypes.DEFAULT_TYPE):
-    user_id = context.job.data
-    if user_id not in users:
-        return
+async def show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [
+        ["Тренировки для мужчин"],
+        ["Тренировки для женщин"],
+        ["Военные ВУЗы РК"]
+    ]
+    await update.message.reply_text(
+        "Выбери направление:",
+        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    )
+    return MENU
 
     users[user_id]["day"] += 1
     text = build_plan(user_id)
@@ -207,7 +217,7 @@ def main():
             CITY: [MessageHandler(filters.TEXT, city)],
             SET_TIME: [MessageHandler(filters.TEXT, set_time)],
         },
-        fallbacks=[],
+        fallbacks=[CommandHandler("menu", show_menu)],
     )
 
     app.add_handler(conv)
@@ -232,3 +242,4 @@ def run_web():
 if __name__ == "__main__":
     threading.Thread(target=run_web).start()
     main()
+
