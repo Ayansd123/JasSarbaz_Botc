@@ -97,8 +97,19 @@ async def teamwork(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def ready(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [["Тренировки для мужчин"], ["Тренировки для женщин"], ["Военные ВУЗы РК"]]
-    await update.message.reply_text("Выбери направление:", reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
+    return await show_menu(update, context)
+
+
+async def show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [
+        ["Тренировки для мужчин"],
+        ["Тренировки для женщин"],
+        ["Военные ВУЗы РК"]
+    ]
+    await update.message.reply_text(
+        "Выбери направление:",
+        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    )
     return MENU
 
 
@@ -128,6 +139,7 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def physical(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
+
     try:
         level = int(update.message.text)
     except:
@@ -138,16 +150,21 @@ async def physical(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users[user_id]["day"] = 1
 
     keyboard = [[city] for city in KZ_CITIES.keys()]
-keyboard.append(["Главное меню"])
-    await update.message.reply_text("Выбери город:", reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
+    keyboard.append(["Главное меню"])
+
+    await update.message.reply_text(
+        "Выбери город:",
+        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    )
     return CITY
 
 
 async def city(update: Update, context: ContextTypes.DEFAULT_TYPE):
     city_name = update.message.text
-    if city_name == "Главное меню":
-    return await show_menu(update, context)
     user_id = update.effective_user.id
+
+    if city_name == "Главное меню":
+        return await show_menu(update, context)
 
     if city_name not in KZ_CITIES:
         await update.message.reply_text("Выбери город из списка")
@@ -185,17 +202,10 @@ async def set_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return await show_menu(update, context)
 
 
-async def show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        ["Тренировки для мужчин"],
-        ["Тренировки для женщин"],
-        ["Военные ВУЗы РК"]
-    ]
-    await update.message.reply_text(
-        "Выбери направление:",
-        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-    )
-    return MENU
+async def send_training(context: ContextTypes.DEFAULT_TYPE):
+    user_id = context.job.data
+    if user_id not in users:
+        return
 
     users[user_id]["day"] += 1
     text = build_plan(user_id)
@@ -226,7 +236,6 @@ def main():
 
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import os
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -242,4 +251,3 @@ def run_web():
 if __name__ == "__main__":
     threading.Thread(target=run_web).start()
     main()
-
